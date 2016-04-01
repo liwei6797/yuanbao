@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   
+           http://www.springframework.org/schema/beans/spring-beans.xsd  
+           http://www.springframework.org/schema/tx 
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/context  
+           http://www.springframework.org/schema/context/spring-context.xsd"
+    default-autowire="byName">
+
+    <context:component-scan base-package="com.star">
+    </context:component-scan>
+    <!-- <context:exclude-filter type="regex" expression="est.e6k.mergedoc.quartz.*" 
+        /> -->
+    <!-- <context:component-scan base-package="com.foo" use-default-filters="false"> 
+        <context:include-filter type="regex" expression="com.foo.bar.*Config" /> 
+        <context:include-filter type="regex" expression="com.foo.config.*" /> </context:component-scan> -->
+
+    <bean id="config" class="est.commons.configuration.EstConfiguration">
+        <!-- <property name="singleton" value="est.e6k.core.Config.CONFIG" /> -->
+
+        <property name="dbConfig">
+            <map>
+                <entry key="dataSource" value-ref="dataSource" />
+                <entry key="tableName" value="est_config" />
+                <entry key="keyColumn" value="key" />
+                <entry key="valueColumn" value="value" />
+            </map>
+        </property>
+
+        <property name="constConfig">
+            <map>
+                <entry key="basePackage" value="est.e6k" />
+                <entry key="packageName" value="est.e6k.*.bean.*" />
+                <entry key="namespace" value="const" />
+            </map>
+        </property>
+    </bean>
+
+    <!-- <bean id="dataSource" class="com.p6spy.engine.spy.P6DataSource"> 
+        <constructor-arg> <ref bean="dataSourceTarget" /> </constructor-arg> </bean> -->
+
+    <bean id="dataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+        destroy-method="close">
+        <property name="driverClass" value="org.h2.Driver" />
+        <property name="jdbcUrl" value="jdbc:h2:tcp://localhost:8081/~/stock" />
+        <property name="user" value="sa" />
+        <property name="password" value="" />
+
+        <!-- these are C3P0 properties -->
+        <property name="acquireIncrement" value="1" />
+        <property name="initialPoolSize" value="1" />
+        <property name="minPoolSize" value="1" />
+        <property name="maxPoolSize" value="5" />
+        <property name="maxIdleTime" value="60" />
+        <property name="acquireRetryAttempts" value="0" />
+        <property name="preferredTestQuery" value="select 1 from dual" />
+        <property name="idleConnectionTestPeriod" value="30" />
+        <!--有强隔离时，必须打开该选项 -->
+        <!-- <property name="automaticTestTable" value="c3p0test"/> <property 
+            name="idleConnectionTestPeriod" value="5"/> -->
+    </bean>
+
+    <bean id="sessionFactory"
+        class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="packagesToScan">
+            <list>
+                <value>est.e6k.cv2.bean</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.show_sql">false</prop>
+                <prop key="hibernate.format_sql">false</prop>
+                <!-- <prop key="hibernate.hbm2ddl.auto">update</prop> <prop 
+                    key="hibernate.default_schema">e6600kf</prop> -->
+                <prop key="hibernate.dialect">org.hibernate.dialect.OracleDialect
+                </prop>
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.jdbc.fetch_size">10000</prop>
+                <prop key="hibernate.cache.use_query_cache">false</prop>
+                <!-- <prop key="hibernate.cache.region.factory_class">net.sf.ehcache.hibernate.SingletonEhCacheRegionFactory</prop> 
+                    <prop key="hibernate.cache.provider_class">com.googlecode.hibernate.memcached.MemcachedCacheProvider</prop> 
+                    <prop key="hibernate.memcached.servers">192.1.1.27:11211 192.1.1.32:11211</prop> 
+                    <prop key="hibernate.memcached.cacheTimeSeconds">300</prop> <prop key="hibernate.memcached.keyStrategy">com.googlecode.hibernate.memcached.HashCodeKeyStrategy</prop> 
+                    <prop key="hibernate.memcached.readBufferSize">16384</prop> <prop key="hibernate.memcached.operationQueueLength">16384</prop> 
+                    <prop key="hibernate.memcached.operationTimeout">1000</prop> <prop key="hibernate.memcached.memcacheClientFactory">est.web.cache.EstMemcacheClientFactory</prop> 
+                    <prop key="hibernate.memcached.hashAlgorithm">NATIVE_HASH</prop> <prop key="hibernate.memcached.connectionFactory">DefaultConnectionFactory</prop> 
+                    <prop key="hibernate.memcached.clearSupported">false</prop> -->
+            </props>
+        </property>
+    </bean>
+
+    <bean id="transactionManagerHibernate"
+        class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+
+    <tx:annotation-driven transaction-manager="transactionManagerHibernate" />
+
+    <!-- 创建Mybatis SqlSessionFactory，同时指定数据源 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:sqlMapConfig.xml" />
+        <property name="mapperLocations" value="classpath*:est/ic/dao/**/impl/*.xml" />
+    </bean>
+
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactory" />
+    </bean>
+
+
+</beans>

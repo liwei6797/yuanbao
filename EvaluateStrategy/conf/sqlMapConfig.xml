@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org.dtd/mybatis-3-config.dtd">
+<configuration>
+	<!--设置数据库返回值为NULL时，依旧会返回结果-->
+	<settings>
+        <setting name="callSettersOnNulls" value="true"/>
+    </settings>
+	<!-- 类型映射 -->
+	<typeAliases>
+		<typeAlias type="est.commons.dao.Json" alias="Json" />
+	</typeAliases>
+
+	<!-- 列出映射文件 -->
+	<mappers>
+	</mappers>
+</configuration>
