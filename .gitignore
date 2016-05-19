@@ -2,3 +2,6 @@
 /EvaluateStrategy/logs
 /EvaluateStrategy/dist
 /EvaluateStrategy/bin
+/CmdTimer/CmdTimer/bin
+/CmdTimer/CmdTimer/obj
+/CmdTimer/*.suo
