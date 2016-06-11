@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:tx="http://www.springframework.org/schema/tx"
+    xmlns:context="http://www.springframework.org/schema/context"
+    xmlns:task="http://www.springframework.org/schema/task"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans   
+           http://www.springframework.org/schema/beans/spring-beans.xsd  
+           http://www.springframework.org/schema/tx 
+           http://www.springframework.org/schema/tx/spring-tx.xsd
+           http://www.springframework.org/schema/context  
+           http://www.springframework.org/schema/context/spring-context.xsd
+            http://www.springframework.org/schema/task 
+            http://www.springframework.org/schema/task/spring-task-3.0.xsd"
+    default-autowire="byName">
+    <context:component-scan base-package="est">
+    </context:component-scan>
+    <task:annotation-driven />
+
+    <bean id="config" class="est.commons.configuration.EstConfiguration">
+        <property name="singleton" value="est.e6k.core.Config.CONFIG" />
+
+        <property name="propertiesConfig">
+            <map>
+                <entry key="location" value="conf/EmsInterface.properties" />
+                <entry key="packageName" value="est.e6k" />
+            </map>
+        </property>
+
+        <property name="dbConfig">
+            <map>
+                <entry key="dataSource" value-ref="dataSource" />
+                <entry key="tableName" value="est_config" />
+                <entry key="keyColumn" value="key" />
+                <entry key="valueColumn" value="value" />
+            </map>
+        </property>
+
+        <property name="constConfig">
+            <map>
+                <entry key="basePackage" value="est.e6k" />
+                <entry key="packageName" value="est.e6k.*.bean.*" />
+                <entry key="namespace" value="const" />
+            </map>
+        </property>
+
+    </bean>
+
+    <bean id="dataSource" class="com.p6spy.engine.spy.P6DataSource">
+        <constructor-arg>
+            <ref bean="dataSourceTarget" />
+        </constructor-arg>
+    </bean>
+
+    <!-- 易司拓的数据库连接 -->
+    <bean id="dataSourceTarget" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+        destroy-method="close">
+
+        <property name="driverClass" value="oracle.jdbc.driver.OracleDriver" />
+        <property name="jdbcUrl"
+            value="jdbc:oracle:thin:@192.168.221.128:1521:orcl" />
+        <property name="user" value="MID_MK" />
+        <property name="password" value="MID_MK" />
+
+        <!-- <property name="jdbcUrl" value="jdbc:oracle:thin:@192.1.1.89:1521:orcl" 
+            /> <property name="user" value="COM3KTOE5100_TEST" /> <property name="password" 
+            value="COM3KTOE5100_TEST" /> -->
+
+        <!-- these are C3P0 properties -->
+        <property name="acquireIncrement" value="1" />
+        <property name="minPoolSize" value="1" />
+        <property name="maxPoolSize" value="20" />
+        <property name="maxIdleTime" value="60" />
+        <property name="acquireRetryAttempts" value="0" />
+
+        <!--有强隔离时，必须打开该选项 -->
+        <!-- <property name="automaticTestTable" value="c3p0test"/> <property 
+            name="idleConnectionTestPeriod" value="5"/> -->
+    </bean>
+
+    <!-- Open3000的数据库连接。如果不使用Open3000的库，随便设置一个可以连上的库即可，可以跟易司拓的库一样 -->
+    <bean id="dataSourceOpen3k" class="com.mchange.v2.c3p0.ComboPooledDataSource"
+        destroy-method="close">
+        <property name="driverClass" value="oracle.jdbc.driver.OracleDriver" />
+        <property name="jdbcUrl"
+            value="jdbc:oracle:thin:@192.168.221.128:1521:orcl" />
+        <property name="user" value="MID_MK" />
+        <property name="password" value="MID_MK" />
+
+        <!-- these are C3P0 properties -->
+        <property name="acquireIncrement" value="1" />
+        <property name="initialPoolSize" value="1" />
+        <property name="minPoolSize" value="1" />
+        <property name="maxPoolSize" value="10" />
+        <property name="maxIdleTime" value="60" />
+        <property name="acquireRetryAttempts" value="0" />
+        <property name="preferredTestQuery" value="select 1 from dual" />
+        <property name="idleConnectionTestPeriod" value="30" />
+        <!--有强隔离时，必须打开该选项 -->
+        <!-- <property name="automaticTestTable" value="c3p0test"/> <property 
+            name="idleConnectionTestPeriod" value="5"/> -->
+    </bean>
+
+    <bean id="sessionFactory"
+        class="org.springframework.orm.hibernate3.annotation.AnnotationSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="packagesToScan">
+            <list>
+                <value>est.e6k</value>
+            </list>
+        </property>
+        <property name="hibernateProperties">
+            <props>
+                <prop key="hibernate.show_sql">false</prop>
+                <prop key="hibernate.format_sql">false</prop>
+                <!-- <prop key="hibernate.hbm2ddl.auto">update</prop> <prop 
+                    key="hibernate.default_schema">e6kkf</prop> -->
+                <prop key="hibernate.dialect">org.hibernate.dialect.OracleDialect
+                </prop>
+                <prop key="hibernate.cache.use_second_level_cache">false</prop>
+                <prop key="hibernate.cache.use_query_cache">false</prop>
+                <prop key="hibernate.connection.release_mode">after_transaction</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:sqlMapConfig.xml" />
+        <property name="mapperLocations" value="classpath*:est/ic/dao/**/impl/*.xml" />
+    </bean>
+
+    <bean id="transactionManagerHibernate"
+        class="org.springframework.orm.hibernate3.HibernateTransactionManager">
+        <property name="sessionFactory" ref="sessionFactory"></property>
+    </bean>
+
+    <bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+        <constructor-arg index="0" ref="sqlSessionFactory" />
+    </bean>
+
+    <tx:annotation-driven transaction-manager="transactionManagerHibernate" />
+</beans>
