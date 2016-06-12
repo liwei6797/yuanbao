@@ -47,6 +47,8 @@ public class Config {
 
     // EMS库的Schema
     public static String Ems_Schema;
+    
+    public static int Save_Data_Count;
 
     static {
         initConfig();

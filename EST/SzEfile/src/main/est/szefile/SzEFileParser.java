@@ -52,6 +52,8 @@ public class SzEFileParser extends Parser {
 
     public static SpringContext CONTEXT = null;
 
+    //private static final int DATA_COUNT = 10000;
+
     /**
      * 过滤重复数据
      * 
@@ -395,7 +397,7 @@ public class SzEFileParser extends Parser {
      * @param tag
      */
     protected void parseAMSEData(EFileTag tag, Date dataTime) {
-        List<Object> list = new LinkedList<Object>();
+
         int lenth = tag.getColumnHeader().size();
         // Map<String, Long> twMap = Cv2Cache
         // .getCimMap4EFile(Cv2TransWindingAll.class);
@@ -405,7 +407,7 @@ public class SzEFileParser extends Parser {
         // }
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
+        List<Object> list = new LinkedList<Object>();
         for (EFileDataRow row : tag) {
             try {
                 // if (row.getValue("计量点号").equals(row.getValue("计量点号"))) {
@@ -420,6 +422,11 @@ public class SzEFileParser extends Parser {
                 }
 
                 addAMSEData(row, null, sdf, list);
+
+                if (list.size() == Config.Save_Data_Count) {
+                    persistData(list.toArray(), dataTime);
+                    list.clear();
+                }
 
             } catch (Exception e) {
                 LOGGER.error("", e);
@@ -443,6 +450,11 @@ public class SzEFileParser extends Parser {
                 }
 
                 addCurrentData(row, null, sdf, list);
+
+                if (list.size() == Config.Save_Data_Count) {
+                    persistData(list.toArray(), null);
+                    list.clear();
+                }
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
@@ -513,6 +525,10 @@ public class SzEFileParser extends Parser {
                 }
 
                 addPowerData(row, null, sdf, list);
+                if (list.size() == Config.Save_Data_Count) {
+                    persistData(list.toArray(), null);
+                    list.clear();
+                }
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
@@ -535,6 +551,10 @@ public class SzEFileParser extends Parser {
                 }
 
                 addPowerFactorData(row, null, sdf, list);
+                if (list.size() == Config.Save_Data_Count) {
+                    persistData(list.toArray(), null);
+                    list.clear();
+                }
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
@@ -598,6 +618,10 @@ public class SzEFileParser extends Parser {
                 }
 
                 addVoltageData(row, null, sdf, list);
+                if (list.size() == Config.Save_Data_Count) {
+                    persistData(list.toArray(), null);
+                    list.clear();
+                }
             } catch (Exception e) {
                 LOGGER.error("", e);
             }

@@ -5,3 +5,7 @@
 /CmdTimer/CmdTimer/bin
 /CmdTimer/CmdTimer/obj
 /CmdTimer/*.suo
+/EST/SzEfile/.settings
+/EST/SzEfile/dist
+/EST/SzEfile/logs
+/EST/SzEfile/*.log
