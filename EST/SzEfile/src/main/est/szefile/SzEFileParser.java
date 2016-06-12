@@ -30,6 +30,10 @@ import est.e6k.mergedoc.util.CimDao;
 import est.szefile.bean.SystemTag;
 import est.szefile.bean.SzdlData;
 import est.szefile.bean.SzhisData;
+import est.szefile.bean.SzhisDataI;
+import est.szefile.bean.SzhisDataP;
+import est.szefile.bean.SzhisDataQ;
+import est.szefile.bean.SzhisDataU;
 import est.szefile.util.Config;
 import est.szefile.util.EmsUtils;
 import est.szefile.util.FileFactory;
@@ -199,8 +203,9 @@ public class SzEFileParser extends Parser {
     }
 
     private void addCurrentData(EFileDataRow efileDataRow, Object object,
-            SimpleDateFormat sdf, Map<String, SzhisData> hisDataMap) {
-        SzhisData twd = buildHisData(efileDataRow, sdf, hisDataMap);
+            SimpleDateFormat sdf, List<SzhisDataI> list)
+            throws InstantiationException, IllegalAccessException {
+        SzhisData twd = buildHisData(efileDataRow, sdf, list, SzhisDataI.class);
 
         // A相电流 B相电流 C相电流 零序电流
         Double ia = EmsUtils.parseDouble2(efileDataRow.getValue("A相电流"));
@@ -214,8 +219,9 @@ public class SzEFileParser extends Parser {
     }
 
     private void addPowerData(EFileDataRow efileDataRow, Object object,
-            SimpleDateFormat sdf, Map<String, SzhisData> dataMap) {
-        SzhisData twd = buildHisData(efileDataRow, sdf, dataMap);
+            SimpleDateFormat sdf, List<SzhisDataP> list)
+            throws InstantiationException, IllegalAccessException {
+        SzhisData twd = buildHisData(efileDataRow, sdf, list, SzhisDataP.class);
 
         // 总有功功率 A相有功功率 B相有功功率 C相有功功率 总无功功率 A相无功功率 B相无功功率 C相无功功率
         // 总视在功率 A相视在功率 B相视在功率 C相视在功率
@@ -250,9 +256,10 @@ public class SzEFileParser extends Parser {
     }
 
     private void addPowerFactorData(EFileDataRow efileDataRow, Object object,
-            SimpleDateFormat sdf, Map<String, SzhisData> hisDataMap) {
+            SimpleDateFormat sdf, List<SzhisDataQ> list)
+            throws InstantiationException, IllegalAccessException {
 
-        SzhisData twd = buildHisData(efileDataRow, sdf, hisDataMap);
+        SzhisData twd = buildHisData(efileDataRow, sdf, list, SzhisDataQ.class);
 
         // 总功率因数 A相功率因数 B相功率因数 C相功率因数
         Double pf = EmsUtils.parseDouble2(efileDataRow.getValue("总功率因数"));
@@ -267,8 +274,9 @@ public class SzEFileParser extends Parser {
     }
 
     private void addVoltageData(EFileDataRow efileDataRow, Object object,
-            SimpleDateFormat sdf, Map<String, SzhisData> hisDataMap) {
-        SzhisData twd = buildHisData(efileDataRow, sdf, hisDataMap);
+            SimpleDateFormat sdf, List<SzhisDataU> list)
+            throws InstantiationException, IllegalAccessException {
+        SzhisData twd = buildHisData(efileDataRow, sdf, list, SzhisDataU.class);
 
         // A相电压 B相电压 C相电压
         Double ua = EmsUtils.parseDouble2(efileDataRow.getValue("A相电压"));
@@ -279,6 +287,38 @@ public class SzEFileParser extends Parser {
         twd.setUb(ub);
         twd.setUc(uc);
 
+    }
+
+    private <T extends SzhisData> T buildHisData(EFileDataRow efileDataRow,
+            SimpleDateFormat sdf, List<T> list, Class<T> cls)
+            throws InstantiationException, IllegalAccessException {
+        Long jldbh = EmsUtils.parseLong(efileDataRow.getValue("计量点编号"));
+        String yhbh = efileDataRow.getValue("用户编号");
+        String jldh = efileDataRow.getValue("计量点号");
+        String dbzcbh = efileDataRow.getValue("电表资产编号");
+        LOGGER.debug("计量点号：" + efileDataRow.getValue("计量点号"));
+
+        if (yhbh.equals("0943000047001607")) {
+            LOGGER.debug("计量点号：" + efileDataRow.getValue("计量点号"));
+        }
+
+        String dataTimeS = efileDataRow.getValue("时间标识");
+        Date dt = null;
+        try {
+            dt = sdf.parse(dataTimeS);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        T twd = cls.newInstance();
+        twd.setDbzcbh(dbzcbh);
+        twd.setJldbh(jldbh);
+        twd.setJldh(jldh);
+        twd.setYhbh(yhbh);
+        twd.setDataTime(dt);
+        twd.setAreaCode(AREA_CODE);
+        list.add(twd);
+        return twd;
     }
 
     private SzhisData buildHisData(EFileDataRow efileDataRow,
@@ -376,7 +416,7 @@ public class SzEFileParser extends Parser {
                     LOGGER.debug("计量点号:" + row.getValue("计量点号")
                             + " 系统数据个数不正确：一行数据数量应该为:" + lenth + "，实际数据量为："
                             + row.getValues().length);
-                    //continue;
+                    // continue;
                 }
 
                 addAMSEData(row, null, sdf, list);
@@ -392,20 +432,22 @@ public class SzEFileParser extends Parser {
             Map<String, SzhisData> hisDataMap) {
         int lenth = tag.getColumnHeader().size();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<SzhisDataI> list = new LinkedList<SzhisDataI>();
         for (EFileDataRow row : tag) {
             try {
                 if (checkColumnCount(row, lenth)) {
                     LOGGER.debug("计量点号:" + row.getValue("计量点号")
                             + " 系统数据个数不正确：一行数据数量应该为:" + lenth + "，实际数据量为："
                             + row.getValues().length);
-                    //continue;
+                    // continue;
                 }
 
-                addCurrentData(row, null, sdf, hisDataMap);
+                addCurrentData(row, null, sdf, list);
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
         }
+        persistData(list.toArray(), null);
     }
 
     /**
@@ -445,7 +487,7 @@ public class SzEFileParser extends Parser {
                 }
             }
             // 最后保存负荷数据
-            persistData(hisDataMap.values().toArray(), dataTime);
+            // persistData(hisDataMap.values().toArray(), dataTime);
         } catch (Exception ex) {
             LOGGER.error("parseEFile：" + path + "出错。", ex);
             LOGGER.info("重新抛出异常...");
@@ -460,40 +502,44 @@ public class SzEFileParser extends Parser {
     private void parsePowerData(EFileTag tag, Map<String, SzhisData> hisDataMap) {
         int lenth = tag.getColumnHeader().size();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<SzhisDataP> list = new LinkedList<SzhisDataP>();
         for (EFileDataRow row : tag) {
             try {
                 if (checkColumnCount(row, lenth)) {
                     LOGGER.debug("计量点号:" + row.getValue("计量点号")
                             + " 系统数据个数不正确：一行数据数量应该为:" + lenth + "，实际数据量为："
                             + row.getValues().length);
-                    //continue;
+                    // continue;
                 }
 
-                addPowerData(row, null, sdf, hisDataMap);
+                addPowerData(row, null, sdf, list);
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
         }
+        persistData(list.toArray(), null);
     }
 
     private void parsePowerFactorData(EFileTag tag,
             Map<String, SzhisData> hisDataMap) {
         int lenth = tag.getColumnHeader().size();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<SzhisDataQ> list = new LinkedList<SzhisDataQ>();
         for (EFileDataRow row : tag) {
             try {
                 if (checkColumnCount(row, lenth)) {
                     LOGGER.debug("计量点号:" + row.getValue("计量点号")
                             + " 系统数据个数不正确：一行数据数量应该为:" + lenth + "，实际数据量为："
                             + row.getValues().length);
-                    //continue;
+                    // continue;
                 }
 
-                addPowerFactorData(row, null, sdf, hisDataMap);
+                addPowerFactorData(row, null, sdf, list);
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
         }
+        persistData(list.toArray(), null);
     }
 
     /**
@@ -541,20 +587,22 @@ public class SzEFileParser extends Parser {
             Map<String, SzhisData> hisDataMap) {
         int lenth = tag.getColumnHeader().size();
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        List<SzhisDataU> list = new LinkedList<SzhisDataU>();
         for (EFileDataRow row : tag) {
             try {
                 if (checkColumnCount(row, lenth)) {
                     LOGGER.debug("计量点号:" + row.getValue("计量点号")
                             + " 系统数据个数不正确：一行数据数量应该为:" + lenth + "，实际数据量为："
                             + row.getValues().length);
-                    //continue;
+                    // continue;
                 }
 
-                addVoltageData(row, null, sdf, hisDataMap);
+                addVoltageData(row, null, sdf, list);
             } catch (Exception e) {
                 LOGGER.error("", e);
             }
         }
+        persistData(list.toArray(), null);
     }
 
     private File pretreatEFile(File file) {
