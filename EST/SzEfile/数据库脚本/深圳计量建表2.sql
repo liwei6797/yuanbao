@@ -41,7 +41,7 @@ partition by range (DATATIME)
 
 
 --index
-CREATE INDEX idx_hisdata_local_Q ON EST_DDY_SZHISDATA_Q(jldbh,datatime,areacode) local; 
+CREATE INDEX idx_hisdata_local_Q ON EST_DDY_SZHISDATA_Q(jldh,datatime,areacode) local; 
 
 CREATE TABLE EST_DDY_SZHISDATA_P
 (
@@ -86,7 +86,7 @@ partition by range (DATATIME)
 
 
 --index
-CREATE INDEX idx_hisdata_local_P ON EST_DDY_SZHISDATA_P(jldbh,datatime,areacode) local; 
+CREATE INDEX idx_hisdata_local_P ON EST_DDY_SZHISDATA_P(jldh,datatime,areacode) local; 
 
 
 CREATE TABLE EST_DDY_SZHISDATA_I
@@ -132,7 +132,7 @@ partition by range (DATATIME)
 
 
 --index
-CREATE INDEX idx_hisdata_local_I ON EST_DDY_SZHISDATA_I(jldbh,datatime,areacode) local; 
+CREATE INDEX idx_hisdata_local_I ON EST_DDY_SZHISDATA_I(jldh,datatime,areacode) local; 
 
 
 
@@ -179,7 +179,7 @@ partition by range (DATATIME)
 
 
 --index
-CREATE INDEX idx_hisdata_local_U ON EST_DDY_SZHISDATA_U(jldbh,datatime,areacode) local; 
+CREATE INDEX idx_hisdata_local_U ON EST_DDY_SZHISDATA_U(jldh,datatime,areacode) local; 
 
 
 execute p_est_core_adddaypar('EST_DDY_SZHISDATA_U');
