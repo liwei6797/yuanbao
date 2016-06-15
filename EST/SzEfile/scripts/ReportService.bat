@@ -8,4 +8,4 @@ for /f "tokens=* delims=" %%a in ('dir "*.jar" /b') do (
    set CLASSPATH=!CLASSPATH!;%%a
 )
 set CLASSPATH=!CLASSPATH!"
-java -Xmx1024m -Xms1024m -XX:+UseConcMarkSweepGC -Djava.ext.dirs=lib -Dlog4j.configuration=log4j.properties -cp %CLASSPATH% est.e6k.cstmrpt.RptServiceMain
+java -Xmx512m -Xms1024m -XX:+UseConcMarkSweepGC -Djava.ext.dirs=lib -Dlog4j.configuration=log4j.properties -cp %CLASSPATH% est.szefile.calc.CalcOverload
