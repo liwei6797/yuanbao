@@ -81,44 +81,6 @@ update mid_point3 set pt=null where pt =0;
 update mid_point3 set Ct=null where ct =0;
 
 ---------------------------------------------------------------------------------------------------------------
-
-select * from mid_point3;
-
-
-
-select count(t.jldh),t.voltage_code from mid_point2 t group by t.voltage_code;
-
-select count(t.jldh),t.ct_ratio from mid_point2 t group by t.ct_ratio;
-select count(t.jldh),t.pt_ratio from mid_point2 t group by t.pt_ratio;
-       
-       
-       
-select * from est_ddy_szhisdata t where t.jldh= '300000069714201276';
-
-
-
-select count(status),status from MK_MID_CUSTOMER t where t.kind = 10 or kind = 11 group by status;
-
-select * from mid_point2;
-
-
-select *
-  from MID_customer c
-  left join est_ddy_szhisdata d
-    on c.pk_src_object = d.yhbh;
-
-
-
-
-select * from mk_mid_metering_point;
-
-select * from mid_yhbh_jldh;
-
-
-select *
-  from MID_customer c
-  left join mk_mid_metering_point d
-    on c.pk_src_object = d;
 	
 alter table mid_point3 add voltlevel varchar2(50);
    update mid_point3 t set t.voltlevel = '交流110V' where t.voltage_code = '01';
@@ -205,3 +167,75 @@ alter table mid_point3 add voltlevel varchar2(50);
    update mid_point3 t set t.voltlevel = '其它直流电压' where t.voltage_code = '99';
    update mid_point3 t set t.voltlevel = '不区分电压等级' where t.voltage_code = '00';
 commit;
+
+
+
+
+alter table mid_point3 add utilkind varchar(50);
+alter table mid_point3 add utilkindcode varchar(50);
+
+
+update mid_point3 mp
+   set mp.utilkindcode =
+       (select utilization_kind
+          from mid_customer c
+         where mp.yhbh = c.pk_src_object);
+
+update mid_point3 set utilkind='大工业用电' where utilkindcode='100';
+update mid_point3 set utilkind='普通工业' where utilkindcode='200';
+update mid_point3 set utilkind='非工业' where utilkindcode='260';
+update mid_point3 set utilkind='商业' where utilkindcode='300';
+update mid_point3 set utilkind='趸售' where utilkindcode='400';
+update mid_point3 set utilkind='居民生活' where utilkindcode='500';
+update mid_point3 set utilkind='非居民' where utilkindcode='600';
+update mid_point3 set utilkind='农业生产' where utilkindcode='700';
+update mid_point3 set utilkind='农业排灌' where utilkindcode='800';
+update mid_point3 set utilkind='其它用电' where utilkindcode='900';
+update mid_point3 set utilkind='未知' where utilkind is null;
+commit;
+
+CREATE TABLE MID_HYFL
+(
+  code             varchar2(50),
+  name             varchar2(50)
+);
+ 
+insert into MID_HYFL(code,name) values('A','农、林、牧、渔业');
+insert into MID_HYFL(code,name) values('B','采矿业');
+insert into MID_HYFL(code,name) values('C','制造业');
+insert into MID_HYFL(code,name) values('D','电力、热力、燃气及水生产和供应业');
+insert into MID_HYFL(code,name) values('E','建筑业');
+insert into MID_HYFL(code,name) values('F','批发和零售业');
+insert into MID_HYFL(code,name) values('G','交通运输、仓储和邮政业');
+insert into MID_HYFL(code,name) values('H','住宿和餐饮业');
+insert into MID_HYFL(code,name) values('I','信息传输、软件和信息技术服务业');
+insert into MID_HYFL(code,name) values('J','金融业');
+insert into MID_HYFL(code,name) values('K','房地产业');
+insert into MID_HYFL(code,name) values('L','租赁和商务服务业');
+insert into MID_HYFL(code,name) values('M','科学研究和技术服务业');
+insert into MID_HYFL(code,name) values('N','水利、环境和公共设施管理业');
+insert into MID_HYFL(code,name) values('O','居民服务、修理和其他服务业');
+insert into MID_HYFL(code,name) values('P','教育');
+insert into MID_HYFL(code,name) values('Q','卫生和社会工作');
+insert into MID_HYFL(code,name) values('R','文化、体育和娱乐业');
+insert into MID_HYFL(code,name) values('S','公共管理、社会保障和社会组织');
+insert into MID_HYFL(code,name) values('T','国际组织');
+commit;
+
+
+alter table mid_point3 add hyfl varchar(50);
+alter table mid_point3 add hyflcode varchar(50);
+
+
+update mid_point3 mp
+   set mp.hyflcode =
+       (select INDUSTRY_CLASSIFICATION
+          from mid_customer c
+         where mp.yhbh = c.pk_src_object);
+
+
+update mid_point3 mp
+   set mp.hyfl =
+       (select name from mid_hyfl c where substr(mp.hyflcode, 0, 1) = c.code);
+	   
+update mid_point3 set hyfl='未知' where hyfl is null;
