@@ -239,3 +239,14 @@ update mid_point3 mp
        (select name from mid_hyfl c where substr(mp.hyflcode, 0, 1) = c.code);
 	   
 update mid_point3 set hyfl='未知' where hyfl is null;
+
+
+alter table EST_IC_UNBALANCE_TMP add unbalance2 number(19, 5);
+
+update EST_IC_UNBALANCE_TMP
+   set unbalance2 =
+       (GREATEST(IA, IB, IC) - LEAST(IA, IB, IC)) / ((IA + IB + IC) / 3);
+	   
+	   
+--去掉居民生活
+create table mid_point4 as select * from mid_point3 t where t.utilkindcode <> '500';  
