@@ -1,0 +1,1 @@
+java -Dapplication.defaultlaf=system -cp ./jxcell.jar com.jxcell.designer.Designer

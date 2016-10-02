@@ -1,0 +1,277 @@
+<HTML>
+<HEAD>
+<TITLE>jxcell demo</TITLE>
+
+<link rel="stylesheet" href="style.css" type="text/css">
+<STYLE TYPE="text/css">
+font.content1 {font: verdana; font-size: 8pt; line-height: 1.5; text-align: justify;}
+font.header {font: verdana; font-size: 20pt;}
+.textbox {font-size: 8pt; font-family: tahoma;}
+</STYLE>
+
+<script type="text/javascript">
+// Global variable
+var m_view;
+var buttonShowTabs;
+var chart;
+
+// Add objects or modify the spreadsheet
+function onloadEvent() {
+
+	//m_view = document.myApplet.getView();
+	
+	//var appid = document.getElementById("myApplet");
+  //m_view = appid.getView();
+  
+
+   
+   m_view = myApplet.getView();
+
+	//set data
+  m_view.setText(1,2,"Jan");
+  m_view.setText(1,3,"Feb");
+  m_view.setText(1,4,"Mar");
+  m_view.setText(1,5,"Apr");
+  m_view.setText(2,1,"Bananas");
+  m_view.setText(3,1,"Papaya");
+  m_view.setText(4,1,"Mango");
+  m_view.setText(5,1,"Lilikoi");
+  m_view.setText(6,1,"Comfrey");
+  m_view.setText(7,1,"Total");
+  for(var col = 2; col <= 5; col++)
+    for(var row = 2; row <= 7; row++)
+       m_view.setFormula(row, col, "RAND()*100");
+  m_view.setFormula(7, 2, "SUM(C3:C7)");
+  m_view.setSelection("C8:F8");
+  m_view.editCopyRight();
+  
+	// buttonShowTabs
+	buttonShowTabs = m_view.addObject(6, 7, 1, 9, 3);
+	buttonShowTabs.setName("buttonShowTabs");
+    buttonShowTabs.setText("Hide Tabs");
+
+	// buttonShowEditBar
+	buttonShowEditBar= m_view.addObject(6, 7, 3, 9, 5);
+	buttonShowEditBar.setName("buttonShowEditBar");
+    buttonShowEditBar.setText("Hide EditBar");
+
+	// buttonHScrollBar
+	buttonHScrollBar= m_view.addObject(6, 7, 5, 9, 7);
+	buttonHScrollBar.setName("buttonHScrollBar");
+    buttonHScrollBar.setText("Hide HScrollBar");
+
+	// buttonVScrollBar
+	buttonVScrollBar= m_view.addObject(6, 7, 7, 9, 9);
+	buttonVScrollBar.setName("buttonVScrollBar");
+    buttonVScrollBar.setText("Hide VScrollBar");
+
+	// buttonGridLines
+	buttonGridLines= m_view.addObject(6, 7, 9, 9, 11);
+	buttonGridLines.setName("buttonGridLines");
+    buttonGridLines.setText("Hide GridLines");
+
+	// buttonRowHeading
+	buttonRowHeading= m_view.addObject(6, 7, 11, 9, 13);
+	buttonRowHeading.setName("buttonRowHeading");
+    buttonRowHeading.setText("Hide RowHeading");
+
+	// buttonColHeading
+	buttonColHeading= m_view.addObject(6, 7, 13, 9, 15);
+	buttonColHeading.setName("buttonColHeading");
+    buttonColHeading.setText("Hide ColHeading");
+
+	// buttonChart
+	buttonChart= m_view.addObject(6, 7, 15, 9, 17);
+	buttonChart.setName("buttonChart");
+    buttonChart.setText("Create chart");
+
+	dropDownChartType= m_view.addObject(20, 7, 17, 9, 19);
+	dropDownChartType.setName("dropDownChartType");
+    dropDownChartType.addItem("Bar");
+    dropDownChartType.addItem("Column");
+    dropDownChartType.addItem("Line");
+    dropDownChartType.addItem("Area");
+    dropDownChartType.addItem("Pie");
+    dropDownChartType.addItem("Step");
+    dropDownChartType.addItem("Doughnut");
+    dropDownChartType.addItem("Scatter");
+    dropDownChartType.addItem("Bubble");
+
+	// Refresh the Control
+	m_view.repaint();
+	//m_view.setRepaint(true);
+}
+
+
+// User defined calculation button
+function Calculate() 
+{
+    m_view.setEntry(1,1,"Hello");
+	// Refresh the Control
+	m_view.repaint();
+}
+
+// Track events generated in the spreadsheet
+function Events(event) {
+	switch (event) {
+		case "buttonShowTabs":
+			if (m_view.getShowTabs() != 0) {
+				buttonShowTabs.setText("Show Tabs");
+				m_view.setShowTabs(0);
+			}
+			else {
+				buttonShowTabs.setText("Hide Tabs");
+				m_view.setShowTabs(1);
+			}
+			m_view.repaint();
+			break;
+		case "buttonShowEditBar":
+			if (m_view.isShowEditBar() != false) {
+				buttonShowEditBar.setText("Show EditBar");
+				m_view.setShowEditBar(false);
+			}
+			else {
+				buttonShowEditBar.setText("Hide EditBar");
+				m_view.setShowEditBar(true);
+			}
+			m_view.repaint();
+			break;
+		case "buttonHScrollBar":
+			if (m_view.getShowHScrollBar() != 0) {
+				buttonHScrollBar.setText("Show HScrollBar");
+				m_view.setShowHScrollBar(0);
+			}
+			else {
+				buttonHScrollBar.setText("Hide HScrollBar");
+				m_view.setShowHScrollBar(1);
+			}
+			m_view.repaint();
+			break;
+		case "buttonVScrollBar":
+			if (m_view.getShowVScrollBar() != 0) {
+				buttonVScrollBar.setText("Show VScrollBar");
+				m_view.setShowVScrollBar(0);
+			}
+			else {
+				buttonVScrollBar.setText("Hide VScrollBar");
+				m_view.setShowVScrollBar(1);
+			}
+			m_view.repaint();
+			break;
+		case "buttonGridLines":
+			if (m_view.isShowGridLines() != false) {
+				buttonGridLines.setText("Show GridLines");
+				m_view.setShowGridLines(false);
+			}
+			else {
+				buttonGridLines.setText("Hide GridLines");
+				m_view.setShowGridLines(true);
+			}
+			m_view.repaint();
+			break;
+		case "buttonRowHeading":
+			if (m_view.isShowRowHeading() != false) {
+				buttonRowHeading.setText("Show RowHeading");
+				m_view.setShowRowHeading(false);
+			}
+			else {
+				buttonRowHeading.setText("Hide RowHeading");
+				m_view.setShowRowHeading(true);
+			}
+			m_view.repaint();
+			break;
+		case "buttonColHeading":
+			if (m_view.isShowColHeading() != false) {
+				buttonColHeading.setText("Show ColHeading");
+				m_view.setShowColHeading(false);
+			}
+			else {
+				buttonColHeading.setText("Hide ColHeading");
+				m_view.setShowColHeading(true);
+			}
+			m_view.repaint();
+			break;
+		case "buttonChart":
+			if (chart != null) {
+				buttonChart.setText("Create Chart");
+				m_view.removeObject(chart);
+				chart = null;
+			}
+			else {
+				buttonChart.setText("Delete Chart");
+				chart = m_view.addObject(4, 1, 8, 7, 22);			
+	    		chart.setTitle("Sample Chart");
+    			chart.setChartType(0);
+    			chart.setLinkRange("B2:F8", true);
+			}
+			m_view.repaint();
+			break;
+		case "dropDownChartType":
+			if(chart != null)
+			{
+				var selectindex = dropDownChartType.getItem(dropDownChartType.getValue()-1);
+				if(selectindex == "Bar")
+					chart.setChartType(4);
+				else if(selectindex == "Column")
+					chart.setChartType(0);
+				else if(selectindex == "Line")
+					chart.setChartType(1);
+				else if(selectindex == "Area")
+					chart.setChartType(2);
+				else if(selectindex == "Pie")
+					chart.setChartType(6);
+				else if(selectindex == "Step")
+					chart.setChartType(3);
+				else if(selectindex == "Doughnut")
+					chart.setChartType(7);
+				else if(selectindex == "Scatter")
+					chart.setChartType(8);
+				else if(selectindex == "Bubble")
+					chart.setChartType(9);
+			} 
+			m_view.repaint();
+			break;
+
+		break;
+		default :
+			break;
+	}
+}	
+</SCRIPT>
+</HEAD>
+<BODY onLoad="onloadEvent()" TEXT="#000000" leftmargin=0 topmargin=0>
+
+
+<table cellpadding="0" cellspacing="0" border="0" width="100%">
+  <tr>
+    <td bgcolor="#FFFFFF" VAlign="top"><br>
+      <table Cellspacing="1" Border="0" Cellpadding="0" width="90%" Align="center">
+        <tr>
+          <td class="textbig" Align="left">
+            A <b>jxcell</b> spreadsheet Design demo.
+            <hr size="1" width="100%">
+          </td>
+		</tr>
+        <tr>
+          <td>
+<script type="text/javascript" src="https://www.java.com/js/deployJava.js"></script>
+<script type="text/javascript">
+  var attributes = {
+    id:'myApplet',
+    archive:"../jxcell.jar",
+    code:'com.jxcell.JBookApplet.class',
+    width:1200, height:900
+};
+var parameters = {} ;
+deployJava.runApplet(attributes, parameters, '1.6');
+
+</script>
+
+    </td>
+		</tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</BODY>
+</HTML>

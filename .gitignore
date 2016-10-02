@@ -9,3 +9,7 @@
 /EST/SzEfile/dist
 /EST/SzEfile/logs
 /EST/SzEfile/*.log
+/EST/JXCellDemo/JXCellDemo/bin
+/EST/JXCellDemo/JXCellDemo/.settings
+/EST/JXCellDemo/JXCellDemo/*.classpath
+/EST/JXCellDemo/JXCellDemo/.project
