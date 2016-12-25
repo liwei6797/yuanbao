@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25029.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileCompare", "FileCompare\FileCompare.csproj", "{0A08A00B-C5AD-418B-8A9B-BD6C8AE6F543}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FileCompare2", "FileCompare2\FileCompare2.csproj", "{132AD933-11A4-428B-BADA-853799854E8F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0A08A00B-C5AD-418B-8A9B-BD6C8AE6F543}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A08A00B-C5AD-418B-8A9B-BD6C8AE6F543}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A08A00B-C5AD-418B-8A9B-BD6C8AE6F543}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A08A00B-C5AD-418B-8A9B-BD6C8AE6F543}.Release|Any CPU.Build.0 = Release|Any CPU
+		{132AD933-11A4-428B-BADA-853799854E8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{132AD933-11A4-428B-BADA-853799854E8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{132AD933-11A4-428B-BADA-853799854E8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{132AD933-11A4-428B-BADA-853799854E8F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
