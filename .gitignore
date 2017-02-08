@@ -21,3 +21,7 @@
 /GetTorrent/GetTorrent/obj
 /Millions/FileCompare/FileCompare/bin
 /Millions/FileCompare/FileCompare/obj
+/QuoteServer/.vs/QuoteServer/v14/*.suo
+/OvpnClientService/bin
+/OvpnClientService/obj
+/OvpnClientService/.vs/OvpnClientService/v14/*.suo
