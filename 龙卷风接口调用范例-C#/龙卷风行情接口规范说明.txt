@@ -1,0 +1,524 @@
+
+/****************************************************************************************
+*						龙卷风行情接口规范V2.0
+*							
+****************************************************************************************/
+
+
+****************************************************************************************/
+*	驱动程序安装后,应该在系统注册库中注册以下信息,分析软件通过该注册信息启动动态库		*
+*	HKEY_LOCAL_MACHINE/SOFTWARE/StockDrv 下												* 
+*	Driver  = "驱动DLL全路径"															*
+****************************************************************************************/
+
+
+
+const
+
+// 工作方式类型定义
+RCV_WORK_SENDMSG  =			4					//消息工作方式
+
+/*
+指数代号-名称
+1A0001  上证综合指数		1A0002  上证Ａ股指数		1A0003  上证Ｂ股指数
+1B0001  上证工业指数		1B0002  上证商业指数		1B0004  上证地产指数
+1B0005  上证公用事业		1B0006  上证综合			1B0007  上证30指数
+
+
+*/
+
+/////////////////////////////////////////////////////////////////////////////////////////
+
+// 证券市场
+		SH_MARKET_EX    =18515		//'HS'		// 上海
+		SZ_MARKET_EX	=23123		//'ZS'		// 深圳
+		HK_MARKET_EX	=19272		//'KH'		// 香港
+
+// 文件数据类型
+// 结构数组形式的文件数据
+		FILE_HISTORY_EX	=		2		// 补日线数据
+		FILE_MINUTE_EX	=		4		// 补分钟线数据
+		FILE_POWER_EX	=		6		// 补充除权数据
+         	FILE_5MINUTE_EX =               81 		// 补5分钟线数据
+
+
+		FILE_BASE_EX	=		0x1000		// 钱龙兼容基本资料文件,m_szFileName仅包含文件名
+		FILE_NEWS_EX	=		0x1002		// 新闻类,其类型由m_szFileName中子目录名来定
+		FILE_HTML_EX	=		0x1004		// HTML文件,m_szFileName为URL
+
+
+// 消息子类型
+		News_Sha_Ex	=			 2			// 上证消息
+		News_Szn_Ex	=			 4			// 深证消息
+		News_Fin_Ex	=			 6			// 财经报道
+		News_TVSta_Ex	=		 8			// 电视台通知
+		News_Unknown_Ex	=		 -1			// 未知提供者
+
+//Definition For nInfo of Function GetStockDrvInfo(int nInfo,void * pBuf);
+		RI_IDSTRING	=			1			// 厂商名称,返回(LPCSTR)厂商名
+		RI_IDCODE	=			2			// 卡号
+		RI_VERSION	=			3			// 驱动程序版本
+		RI_V2SUPPORT	=		6			// 支持深圳SJS库结构
+
+		STKLABEL_LEN	=		10			// 股号数据长度,国内市场股号编码兼容钱龙
+		STKNAME_LEN	=			32			// 股名长度
+                MKTNAME_LEN     =                  16                     //码表所代表的市场名称
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////
+//行情数据(版本3数据结构RCV_WORK_SENDMSG，兼容RCV_REPORT_STRUCTExV2结构，使用m_cbSize区分不同结构)
+//版本3支持5档买卖盘
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+    public struct RCV_REPORT_STRUCTExV3
+    {
+        public UInt16 m_cbSize;                                    // 结构大小
+        public Int32 m_time;                                       // 交易时间
+        public UInt16 m_wMarket;                                   // 股票市场类型
+        //m_szLabel，m_szName 的定义根据自己喜好可以定义成
+        [MarshalAs(   UnmanagedType.ByValArray, SizeConst=10)]   
+        public   char[]  m_szLabel; //   代码,以'\0'结尾   数组大小为STKLABEL_LEN，在c++描述中为char[10]     
+        [MarshalAs(   UnmanagedType.ByValArray,   SizeConst=32)]   
+        public   char[]  m_szName;  //   名称,以'\0'结尾   数组大小为STKNAME_LEN,在c++描述中为char[32]     
+        /*  也可以定义成
+        [MarshalAs(UnmanagedType.ByValTStr,SizeConst = 10)]
+        public string m_szLabel;                               // 代码,以'\0'结尾  数组大小为STKLABEL_LEN，在c++描述中为char[10]     
+        [MarshalAs(UnmanagedType.ByValTStr,SizeConst = 32)]
+        public string m_szName;                                // 名称,以'\0'结尾 组大小为STKNAME_LEN,在c++描述中为char[32]    
+        */
+        public Single m_fLastClose;                           // 昨收
+        public Single m_fOpen;                                // 今开
+        public Single m_fHigh;                                // 最高
+        public Single m_fLow;                                 // 最低
+        public Single m_fNewPrice;                            // 最新
+        public Single m_fVolume;                              // 成交量
+        public Single m_fAmount;                              // 成交额
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+        public Single[] m_fBuyPrice;                         // 申买价1,2,3
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+        public Single[] m_fBuyVolume;                        // 申买量1,2,3
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+        public Single[] m_fSellPrice;                        // 申卖价1,2,3
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 3)]
+        public Single[] m_fSellVolume;                       // 申卖量1,2,3
+        public Single m_fBuyPrice4;                          // 申买价4
+        public Single m_fBuyVolume4;                         // 申买量4
+        public Single m_fSellPrice4;                         // 申卖价4
+        public Single m_fSellVolume4;                        // 申卖量4
+        public Single m_fBuyPrice5;                          // 申买价5
+        public Single m_fBuyVolume5;                         // 申买量5
+        public Single m_fSellPrice5;                         // 申卖价5
+        public Single m_fSellVolume5;                        // 申卖量5
+    };
+
+
+//////////////////////////////////////////////////////////////////////////////////
+    //数据头 m_dwHeadTag == EKE_HEAD_TAG 
+    EKE_HEAD_TAG =	0xffffffff
+
+    //补充数据头  
+    //这个在日线、分时数据中都有用到
+    public struct RCV_EKE_HEADEx
+    {
+        public uint m_dwHeadTag; // = EKE_HEAD_TAG  
+        public ushort m_wMarket; // 市场类型  
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+        public char[] m_szLabel; // 股票代码  
+    }
+
+
+    //补充日线数据  
+    //[StructLayout(LayoutKind.Explicit)]
+    public struct RCV_HISTORY_STRUCTEx
+    {
+        public int m_time;
+        public Single m_fOpen; //开盘  
+        public Single m_fHigh; //最高  
+        public Single m_fLow; //最低  
+        public Single m_fClose; //收盘  
+        public Single m_fVolume; //量  
+        public Single m_fAmount; //额  
+        public UInt16 m_wAdvance; //涨数,仅大盘有效  
+        public UInt16 m_wDecline; //跌数,仅大盘有效  
+    }
+
+
+    //补充分时线数据
+    public struct RCV_MINUTE_STRUCTEx
+    {
+        public Int32 m_time; //UCT
+        public Single m_fPrice;
+        public Single m_fVolume;
+        public Single m_fAmount;
+    }
+
+
+    //补充除权数据
+    public struct RCV_POWER_STRUCTEx
+    {
+        public int m_time;         //UCT
+        public Single m_fGive;      //每股送
+        public Single m_fPei;       //每股配
+        public Single m_fPeiPrice;  //配股价,仅当 m_fPei!=0.0f 时有效
+        public Single m_fProfit;    //每股红利
+    }
+
+
+
+    //补充历史五分钟K线数据,每一数据结构都应通过 m_time == EKE_HEAD_TAG,判断是否为 m_head,然后再作解释
+    public struct RCV_HISMINUTE_STRUCTEx
+    {
+        public int m_time;              //UCT
+        public Single m_fOpen;          //开盘
+        public Single m_fHigh;          //最高
+        public Single m_fLow;           //最低
+        public Single m_fClose;         //收盘
+        public Single m_fVolume;        //量
+        public Single m_fAmount;        //额
+        public Single m_fActiveBuyVol;  //主动买量如没有计算m_fActiveBuyVol=0
+    }
+
+
+
+//////////////////////////////////////////////////////////////////////////////////
+// 文件类型数据包头
+//  注一:
+//	m_wDataType == FILE_BASE_EX
+//				m_dwAttrib = 股票证券市场,m_szFileName仅包含文件名
+//  m_wDataType == FILE_NEWS_EX
+//				m_dwAttrib = 消息来源,m_szFileName 包含目录的文件名,目录名为消息来源
+//				如:  "上交所消息\\0501Z012.TXT","新兰德\\XLD0001.TXT"
+//  m_wDataType == FILE_HTML_EX
+//				m_dwAttrib 保留, m_szFileName为URL
+//	m_wDataType	== FILE_SOFTWARE_EX
+//				m_dwAttrib 分析软件类型, 用于初步判断
+//				m_szFileName 分析软件 ID 特征字符串 + '\\' + 文件名
+//				如 "CnStock\\CnStock.EXE",
+//				ID 特征字符串为 "CnStock", "CnStock.EXE" 为文件名
+//				特征字符串 和 文件名及其含义由分析软件商定义
+//  注二:
+//		数据文件循环播出,每个文件有唯一的序列号,以避免重复接收
+
+    //[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+    public struct RCV_FILE_HEADEx
+    {
+        public int m_dwAttrib;                      // 文件子类型
+        public int m_dwLen;                         // 文件长度
+        public int m_dwSerialNoorTime;              //文件序列号或时间.
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 260)]
+        public char[] m_szFileName;                        // 文件名 or URL
+    }
+
+//////////////////////////////////////////////////////////////////////////////////
+
+
+        public const int RCV_REPORT = 0x3f001234;//股票行情
+        public const int RCV_FILEDATA = 0x3f001235;//文件
+        public const int RCV_FENBIDATA= 0x3f001258; //分笔数据，买卖盘数据均为空值
+        public const int RCV_MKTTBLDATA = 0x3f001259;//接收到市场码表数据
+        public const int RCV_FINANCEDATA = 0x3f001300;//接收到财务文件数据
+
+
+
+//  数据通知消息
+//直接数据引用通知消息
+//	wParam = RCV_WPARAM;
+//  lParam 指向 RCV_DATA结构;
+//	返回 1 已经处理, 0 未处理或不能处理
+
+
+// 注一:
+//	  记录数表示行情数据和补充数据(包括 Header)的数据包数,对文件类型数据, = 1
+// 注二:
+//	  若 m_bDISK = FALSE, m_pData 为数据缓冲区指针
+//		 ******** 数据共享,不能修改数据 **********
+//		 m_bDISK = TRUE,  m_pData 为该文件的存盘文件名,一般情况只有
+//		 升级软件等大文件用存盘方式
+
+    //[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi , Pack=1)]
+    public struct RCV_DATA
+    {
+        public int m_wDataType;                     // 文件类型
+        public int m_nPacketNum;                    // 记录数,参见注一
+        public RCV_FILE_HEADEx m_File;          // 文件接口
+        public int m_bDISK;                        // 文件是否已存盘的文件
+        public IntPtr m_pData;
+    } ;
+
+
+
+    //分笔数据///////////////////////////////////
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)] 
+    public struct RCV_FENBI_STRUCTEx
+    {
+	    public int		m_lTime;				// hhmmss 例：93056 表明9:
+	    public Single	m_fHigh;				// 最高
+	    public Single	m_fLow;					// 最低 
+	    public Single	m_fNewPrice;				// 最新 
+	    public Single	m_fVolume;				// 成交量
+	    public Single	m_fAmount;				// 成交额
+	    public int		m_lStroke;				// 保留
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+            public Single[]     m_fBuyPrice;            	// 申买价1,2,3,4,5
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+	    public Single[]	m_fBuyVolume;			// 申买量1,2,3,4,5
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+	    public Single[]	m_fSellPrice;			// 申卖价1,2,3,4,5
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+	    public Single[]	m_fSellVolume;			// 申卖量1,2,3,4,5
+
+    };
+
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)] 
+    public struct RCV_FENBI
+    {
+	    public UInt16 	m_wMarket;			// 股票市场类型
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+	    public char[]	m_szLabel;	                // 股票代码,以'\0'结尾
+	    public Int32	m_lDate;			// 分笔数据的日期 FORMAT:
+	    public Single	m_fLastClose;			// 昨收
+	    public Single	m_fOpen;			// 今开
+	    public UInt16	m_nCount;			//m_Data的数据量分笔笔数
+            public IntPtr       m_Data;				//长度为m_nCount
+    };
+
+
+
+    //码表数据
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+    public struct  RCV_TABLE_STRUCT
+    {
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+        public char[] m_szLabel;            //股票代码,以'\0'结尾,如 "500500"
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
+        public char[] m_szName;             //股票名称,以'\0'结尾,"上证指数"
+        public UInt16 m_cProperty;          //每手股数
+    }
+
+    //码表数据头结构
+    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+    public struct HLMarketType
+    {
+        public UInt16 m_wMarket;     //市场代码
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 16)]
+        public char[] m_Name;        //市场名称
+        public int m_lProperty;      //市场属性（未定义）
+        public int m_lDate;          //数据日期（20030114）
+        public UInt16 m_PeriodCount; //交易时段个数
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+        public UInt16[] m_OpenTime;  //开市时间 1,2,3,4,5
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 5)]
+        public UInt16[] m_CloseTime; //收市时间 1,2,3,4,5
+        public UInt16 m_nCount;      //该市场的证券个数
+        public IntPtr m_Data;        //长度为m_nCount
+    }
+
+    //财务数据结构
+   [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Ansi, Pack = 1)]
+   public struct Fin_LJF_STRUCTEx
+   {
+        public UInt16 m_wMarket;         // 股票市场类型
+        public UInt16 N1;                // 保留字段
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
+        public char[] m_szLabel;         // 股票代码,以'\0'结尾,如 "600050"  10个字节 同通视规范定义
+        public int BGRQ;                 // 财务数据的日期 如半年报 季报等 如 20090630 表示 2009年半年报
+        public Single ZGB;             // 总股本
+        public Single GJG;             // 国家股
+        public Single FQFRG;           // 发起人法人股
+        public Single FRG;             // 法人股
+        public Single BGS;             // B股
+        public Single HGS;             // H股
+        public Single MQLT;            // 目前流通
+        public Single ZGG;             // 职工股
+        public Single A2ZPG;           // A2转配股
+        public Single ZZC;             // 总资产(千元)
+        public Single LDZC;            // 流动资产
+        public Single GDZC;            // 固定资产
+        public Single WXZC;            // 无形资产
+        public Single CQTZ;            // 长期投资
+        public Single LDFZ;            // 流动负债
+        public Single CQFZ;            // 长期负债
+        public Single ZBGJJ;           // 资本公积金
+        public Single MGGJJ;           // 每股公积金
+        public Single GDQY;            // 股东权益
+        public Single ZYSR;            // 主营收入
+        public Single ZYLR;            // 主营利润
+        public Single QTLR;            // 其他利润
+        public Single YYLR;            // 营业利润
+        public Single TZSY;            // 投资收益
+        public Single BTSR;            // 补贴收入
+        public Single YYWSZ;           // 营业外收支
+        public Single SNSYTZ;          // 上年损益调整
+        public Single LRZE;            // 利润总额
+        public Single SHLR;            // 税后利润
+        public Single JLR;             // 净利润
+        public Single WFPLR;           // 未分配利润
+        public Single MGWFP;           // 每股未分配
+        public Single MGSY;            // 每股收益
+        public Single MGJZC;           // 每股净资产
+        public Single TZMGJZC;         // 调整每股净资产
+        public Single GDQYB;           // 股东权益比
+        public Single JZCSYL;          // 净资收益率
+   }
+
+
+
+
+//消息处理程序 DEMO
+protected override void WndProc(ref System.Windows.Forms.Message m)
+{
+        //检测消息类型	
+	switch (m.WParam.ToInt32())
+	{ 
+		case RCV_REPORT:						// 共享数据引用方式,股票行情
+		{
+			RCV_DATA pHeader = PRCV_DATA(m.lParam);
+                	for i:= 0 to pHeader.m_nPacketNum-1 do
+                	begin
+				// 数据处理
+			end;
+		}
+	 	case RCV_FILEDATA:						// 共享数据引用方式,文件
+		{
+			RCV_DATA pHeader = PRCV_DATA(m.lParam);
+			switch(pHeader.m_wDataType)
+			{
+				case FILE_HISTORY_EX:{
+					// 补日线数据
+					break;
+				}
+				case FILE_MINUTE_EX:{
+					// 补分钟线数据
+					break;
+				}
+				CASE FILE_5MINUTE_EX:{
+					// 补五分钟线数据
+					break;
+				}
+				CASE FILE_POWER_EX:{
+					// 补充除权数据
+					break;
+				}
+				CASE FILE_BASE_EX:{
+					// 钱龙兼容基本资料文件,m_szFileName仅包含文件名
+					break;
+				}
+				CASE FILE_NEWS_EX:{
+					// 新闻类,其类型由m_szFileName中子目录名来定
+					break;
+				}
+			}
+		}
+		case RCV_FENBIDATA:{ 
+			//接口补充的盘口分笔数据,这个是指当天的盘口分笔
+			break;
+		}
+		RCV_MKTTBLDATA :{
+			// 收到码表数据
+			break;
+		}
+		RCV_FINANCEDATA :{
+			//收到财务数据
+			break;
+		}
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////////////
+//APIs
+
+//////////////////////////////////////////////////////////////////////////////////
+// 注册函数
+
+// 股票初始化
+// 入口参数:
+//		hWnd			处理消息的窗口句柄
+//		Msg				用户自定义消息
+//		nWorkMode		接口工作方式,参见工作方式类型定义
+// 返回参数:
+//		 1				成功	
+//		-1				失败
+// 注:
+//		注册后,驱动程序会向处理窗口发送消息; 若不注册,通过查询方式亦可取得数据
+//		若股票接收没启动,则启动股票接收程序
+public delegate int Stock_Init(IntPtr nHwnd, int nMsg, int nWorkMode);
+
+// 退出,停止发送消息
+// 入口参数:
+//		hWnd			处理消息的窗口句柄,同 Stock_Init 的调用入口参数
+//	返回参数:
+//		 1				成功	
+//		-1				失败
+public delegate int Stock_Quit(IntPtr nHwnd);
+
+
+// 激活接收程序,进行设置
+// 入口参数:
+//			bSetup		TRUE		显示窗口,进行设置
+//						FALSE		隐含窗口
+// 返回参数:
+//			 1			成功
+//			-1			失败
+
+public delegate int SetupReceiver(bool bShowWindow);
+
+
+//	取得股票驱动信息
+//	入口参数:
+//			nInfo		索引
+//			pBuf		缓冲区
+//	出口参数:
+//			nInfo == RI_IDSTRING,	返回特征字符串长度, pBuf 为特征字符串
+//									如:	"TongShi_StockDrv_1.00"
+//			nInfo == RI_IDCODE,		返回信息卡 ID 号, pBuf 为字符串形式的 ID 号
+//									如:	0x78001234	  "78001234"
+//			nInfo == RI_VERSION,	返回信息卡版本号, pBuf 为字符串版本
+//									如:  1.00		  "1.00"		
+//			nInfo == RI_V2SUPPORT,	返回是否支持深圳SJS库结构, pBuf无效
+
+public delegate int GetStockDrvInfo(int nInfo,IntPtr pBuf);
+public delegate int ReInitStockInfo();  //保留函数，暂无用
+
+
+//扩展API函数
+
+//功能，补日线数据
+//参数：nTimePeriod参数值1,2,3分别表示周、月、全部
+//pszStockCode，参数为空表示补全部股票的日线数据，不为空则表示补当前股票的日线数据
+public delegate int AskStockDay(string pszStockCode,int nTimePeriod);
+
+//功能，补五分钟线数据
+//参数：nTimePeriod参数值1,2,3分别表示周、月、最近三个月
+//pszStockCode，参数为空表示补全部股票的五分钟线数据，不为空则表示补当前股票的五分钟线数据
+public delegate int AskStockMn5(string pszStockCode, int nTimePeriod);
+
+//功能，取个股资料,目前版本针对个股资料F10，不区分个股，获取的数据都是全部资料
+//参数：pszStockCode，目前此参数无论是否空值，均获取全部股票的F10个股资料
+public delegate int AskStockBase(string pszStockCode); 
+
+//功能，取财经新闻
+public delegate int AskStockNews();
+
+//功能，取数中止,此功能相当于补数界面上的停止补数按钮的功能
+public delegate int AskStockHalt(); 
+
+//功能，取分时数据
+//参数：如果参数代码为空，则补全部股票的分时
+public delegate int AskStockMin(string pszStockCode);
+
+//功能，取分笔数据
+//参数：如果参数代码为空，则补全部股票的分笔
+public delegate int AskStockPRP(string pszStockCode);
+
+//功能，取除权数据
+public delegate int AskStockPwr();
+
+//功能，取财务数据
+public delegate int AskStockFin();
+
+
+
