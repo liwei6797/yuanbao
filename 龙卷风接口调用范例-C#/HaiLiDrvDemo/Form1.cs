@@ -10,6 +10,7 @@ using Microsoft.Win32;        //注册表命名空间
 using HaiLiDrvDemo;
 using Newtonsoft.Json;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace HaiLiDrvDemo
 {
@@ -42,7 +43,7 @@ namespace HaiLiDrvDemo
 
 
         private string dirData = "data\\" + DateTime.Now.Year + "\\" + DateTime.Now.ToString("yyyy-MM-dd");
-        private string dirFenbi = "fenbi\\" + DateTime.Now.Year + "\\" + DateTime.Now.ToString("yyyy-MM-dd");
+        private string dirFenbi = "" + DateTime.Now.Year + "\\" + DateTime.Now.ToString("yyyy-MM-dd");
 
         private static Delegate GetAddress(int dllModule, string functionname, Type t)
         {
@@ -264,23 +265,28 @@ namespace HaiLiDrvDemo
                             HaiLiDrvDemo.RCV_FENBI mHeader = (HaiLiDrvDemo.RCV_FENBI)Marshal.PtrToStructure(m.LParam, typeof(HaiLiDrvDemo.RCV_FENBI));
                             listBox1.Items.Add("当前分笔代码:" + new string(mHeader.m_szLabel));
                             listBox1.Items.Add("共有分笔记录数:" + mHeader.m_nCount.ToString());
-                            for (int i = 0; i < mHeader.m_nCount; i++)
-                            {
-                                HaiLiDrvDemo.RCV_FENBI_STRUCTEx Buf = (HaiLiDrvDemo.RCV_FENBI_STRUCTEx)Marshal.PtrToStructure(new IntPtr((int)m.LParam + 30 + 108 * i), typeof(HaiLiDrvDemo.RCV_FENBI_STRUCTEx));
-                                //将实时数据存入自己的集合中，或者做别的数量  
-                                //System.Text.StringBuilder sb = new System.Text.StringBuilder();
-                                //sb.Append(report.m_szName);
-                                //string codename = sb.ToString();
-                                if (i <= 20)
-                                {
-                                    listBox1.Items.Add("记录时间:" + Convert.ToString(Buf.m_lTime) +
-                                        ",成交价:" + Convert.ToString(Buf.m_fNewPrice) + ",成交量:" + Convert.ToString(Buf.m_fVolume) + ",成交金额:" + Convert.ToString(Buf.m_fAmount));
-                                }
-                                //注意：避免影响界面的刷新，只显示前20条记录
-                                //if (i > 20) break;
 
-                                WriteFile(Buf, mHeader.m_szLabel, dirFenbi);
+                            //Task.Factory.StartNew((obj) =>
+                            //{
+                            Tuple<RCV_FENBI, IntPtr> tuple = Tuple.Create(mHeader, m.LParam);
+                            HaiLiDrvDemo.RCV_FENBI header = tuple.Item1;
+                            char[] dest = new char[6];//股票代码
+                            Array.Copy(header.m_szLabel, dest, 6);
+                            string fileName = dirFenbi + "\\" + (dest[0] == '6' ? "1" : "2") + new string(dest) + ".txt";
+                            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(fileName, true))
+                            {
+                                for (int i = 0; i < header.m_nCount; i++)
+                                {
+                                    HaiLiDrvDemo.RCV_FENBI_STRUCTEx Buf =
+                                    (HaiLiDrvDemo.RCV_FENBI_STRUCTEx)Marshal.PtrToStructure(
+                                        new IntPtr((int)tuple.Item2 + 30 + 108 * i),
+                                        typeof(HaiLiDrvDemo.RCV_FENBI_STRUCTEx));
+
+                                    string strSerializeJSON = JsonConvert.SerializeObject(Buf);
+                                    sw.WriteLine(strSerializeJSON);// 直接追加文件末尾，换行
+                                }
                             }
+                            // }, );
                             break;
                         }
                     case HaiLiDrvDemo.StockDrv.RCV_MKTTBLDATA:
@@ -332,16 +338,9 @@ namespace HaiLiDrvDemo
             base.WndProc(ref m);
         }
 
-        private void WriteFile(object report, char[] stockNo, string dir)
+        private void WriteFile(StreamWriter sw, object report)
         {
-            string strSerializeJSON = JsonConvert.SerializeObject(report);
-            char[] dest = new char[6];//股票代码
-            Array.Copy(stockNo, dest, 6);
-            string fileName = dir + "\\" + (dest[0] == '6' ? "1" : "2") + new string(dest) + ".txt";
-            using (System.IO.StreamWriter file = new System.IO.StreamWriter(fileName, true))
-            {
-                file.WriteLine(strSerializeJSON);// 直接追加文件末尾，换行   
-            }
+
         }
 
         private void button2_Click(object sender, EventArgs e)
