@@ -272,7 +272,8 @@ namespace HaiLiDrvDemo
                             HaiLiDrvDemo.RCV_FENBI header = tuple.Item1;
                             char[] dest = new char[6];//股票代码
                             Array.Copy(header.m_szLabel, dest, 6);
-                            string fileName = dirFenbi + "\\" + (dest[0] == '6' ? "1" : "2") + new string(dest) + ".txt";
+                            //18515=SH 23123=SZ                            
+                            string fileName = dirFenbi + "\\" + (header.m_wMarket == 18515 ? "1" : "2") + new string(dest) + ".txt";
                             using (System.IO.StreamWriter sw = new System.IO.StreamWriter(fileName, true))
                             {
                                 for (int i = 0; i < header.m_nCount; i++)
