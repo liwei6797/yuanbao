@@ -11,6 +11,7 @@ using HaiLiDrvDemo;
 using Newtonsoft.Json;
 using System.IO;
 using System.Threading.Tasks;
+using System.Net;
 
 namespace HaiLiDrvDemo
 {
@@ -42,8 +43,8 @@ namespace HaiLiDrvDemo
         public static extern int FreeLibrary(int handle);
 
 
-        private string dirData = "data\\" + DateTime.Now.Year + "\\" + DateTime.Now.ToString("yyyy-MM-dd");
-        private string dirFenbi = "" + DateTime.Now.Year + "\\" + DateTime.Now.ToString("yyyy-MM-dd");
+        //private string dirData = "data\\" + DateTime.Now.Year + "\\" + DateTime.Now.ToString("yyyy-MM-dd");
+        private string dirFenbi = "";
 
         private static Delegate GetAddress(int dllModule, string functionname, Type t)
         {
@@ -62,7 +63,9 @@ namespace HaiLiDrvDemo
 
         private void CreateDir()
         {
-            Directory.CreateDirectory(dirData);
+            DateTime dt = GetStockDate();
+            string dirFenbi = "" + dt.Year + "\\" + dt.ToString("yyyy-MM-dd");
+            //Directory.CreateDirectory(dirData);
             Directory.CreateDirectory(dirFenbi);
         }
 
@@ -273,7 +276,7 @@ namespace HaiLiDrvDemo
                             char[] dest = new char[6];//股票代码
                             Array.Copy(header.m_szLabel, dest, 6);
                             string fileName = dirFenbi + "\\" + (dest[0] == '6' ? "1" : "2") + new string(dest) + ".txt";
-                            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(fileName, true))
+                            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(fileName, !chkOverwrite.Checked))
                             {
                                 for (int i = 0; i < header.m_nCount; i++)
                                 {
@@ -419,6 +422,28 @@ namespace HaiLiDrvDemo
                 AskStockFinProc();
         }
 
+
+        private DateTime GetStockDate()
+        {
+            try
+            {
+                WebRequest request = HttpWebRequest.Create("http://hq.sinajs.cn/list=sh000001");
+                request.Method = "GET";
+                using (WebResponse wr = request.GetResponse())
+                {
+                    StreamReader sr = new StreamReader(wr.GetResponseStream(), Encoding.UTF8);
+                    string[] content = sr.ReadToEnd().Split(',');
+                    sr.Close();
+                    return DateTime.Parse(content[content.Length - 3]);
+                }
+            }
+            catch (Exception ex)
+            {
+                return DateTime.Now;
+            }
+            //string[] content = WebRequest.Get("http://hq.sinajs.cn/list=sh000001").execute().returnContent().asString().split(",");
+            //return org.apache.commons.lang3.time.DateUtils.parseDate(content[content.length - 3], "yyyy-MM-dd");
+        }
     }
 
     public class Demo
