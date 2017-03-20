@@ -41,11 +41,12 @@
             this.button10 = new System.Windows.Forms.Button();
             this.button11 = new System.Windows.Forms.Button();
             this.button12 = new System.Windows.Forms.Button();
+            this.chkOverwrite = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(36, 3);
+            this.button1.Location = new System.Drawing.Point(12, 6);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 0;
@@ -55,7 +56,7 @@
             // 
             // button2
             // 
-            this.button2.Location = new System.Drawing.Point(36, 39);
+            this.button2.Location = new System.Drawing.Point(12, 42);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(75, 23);
             this.button2.TabIndex = 1;
@@ -65,7 +66,7 @@
             // 
             // button3
             // 
-            this.button3.Location = new System.Drawing.Point(36, 68);
+            this.button3.Location = new System.Drawing.Point(12, 71);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(75, 23);
             this.button3.TabIndex = 2;
@@ -77,9 +78,9 @@
             // 
             this.listBox1.FormattingEnabled = true;
             this.listBox1.ItemHeight = 12;
-            this.listBox1.Location = new System.Drawing.Point(12, 97);
+            this.listBox1.Location = new System.Drawing.Point(12, 121);
             this.listBox1.Name = "listBox1";
-            this.listBox1.Size = new System.Drawing.Size(528, 328);
+            this.listBox1.Size = new System.Drawing.Size(528, 304);
             this.listBox1.TabIndex = 3;
             // 
             // button4
@@ -172,11 +173,22 @@
             this.button12.UseVisualStyleBackColor = true;
             this.button12.Click += new System.EventHandler(this.button12_Click);
             // 
+            // chkOverwrite
+            // 
+            this.chkOverwrite.AutoSize = true;
+            this.chkOverwrite.Location = new System.Drawing.Point(205, 97);
+            this.chkOverwrite.Name = "chkOverwrite";
+            this.chkOverwrite.Size = new System.Drawing.Size(48, 16);
+            this.chkOverwrite.TabIndex = 13;
+            this.chkOverwrite.Text = "覆盖";
+            this.chkOverwrite.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(563, 442);
+            this.Controls.Add(this.chkOverwrite);
             this.Controls.Add(this.button12);
             this.Controls.Add(this.button11);
             this.Controls.Add(this.button10);
@@ -193,6 +205,7 @@
             this.Name = "Form1";
             this.Text = "开发者版本接口调用演示程序(C#语言调用示例)";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
@@ -211,6 +224,7 @@
         private System.Windows.Forms.Button button10;
         private System.Windows.Forms.Button button11;
         private System.Windows.Forms.Button button12;
+        private System.Windows.Forms.CheckBox chkOverwrite;
     }
 }
 
