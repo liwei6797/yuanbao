@@ -64,7 +64,7 @@ namespace HaiLiDrvDemo
         private void CreateDir()
         {
             DateTime dt = GetStockDate();
-            string dirFenbi = "" + dt.Year + "\\" + dt.ToString("yyyy-MM-dd");
+            dirFenbi = "" + dt.Year + "\\" + dt.ToString("yyyy-MM-dd");
             //Directory.CreateDirectory(dirData);
             Directory.CreateDirectory(dirFenbi);
         }
