@@ -276,20 +276,8 @@ namespace HaiLiDrvDemo
                             char[] dest = new char[6];//股票代码
                             Array.Copy(header.m_szLabel, dest, 6);
                             //18515=SH 23123=SZ                            
-                            string fileName = dirFenbi + "\\" + (header.m_wMarket == 18515 ? "1" : "2") + new string(dest) + ".txt";
-                            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(fileName, !chkOverwrite.Checked))
-                            {
-                                for (int i = 0; i < header.m_nCount; i++)
-                                {
-                                    HaiLiDrvDemo.RCV_FENBI_STRUCTEx Buf =
-                                    (HaiLiDrvDemo.RCV_FENBI_STRUCTEx)Marshal.PtrToStructure(
-                                        new IntPtr((int)tuple.Item2 + 30 + 108 * i),
-                                        typeof(HaiLiDrvDemo.RCV_FENBI_STRUCTEx));
-
-                                    string strSerializeJSON = JsonConvert.SerializeObject(Buf);
-                                    sw.WriteLine(strSerializeJSON);// 直接追加文件末尾，换行
-                                }
-                            }
+                            string fileName = dirFenbi + "\\" + (header.m_wMarket == 18515 ? "1" : "2") + new string(dest) + ".btor";
+                            WriteBinaryFile(fileName, tuple);
                             // }, );
                             break;
                         }
@@ -342,9 +330,58 @@ namespace HaiLiDrvDemo
             base.WndProc(ref m);
         }
 
-        private void WriteFile(StreamWriter sw, object report)
+        private void WriteJsonFile(string fileName, Tuple<RCV_FENBI, IntPtr> tuple)
         {
+            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(fileName, !chkOverwrite.Checked))
+            {
+                for (int i = 0; i < tuple.Item1.m_nCount; i++)
+                {
+                    HaiLiDrvDemo.RCV_FENBI_STRUCTEx Buf =
+                    (HaiLiDrvDemo.RCV_FENBI_STRUCTEx)Marshal.PtrToStructure(
+                        new IntPtr((int)tuple.Item2 + 30 + 108 * i),
+                        typeof(HaiLiDrvDemo.RCV_FENBI_STRUCTEx));
 
+                    string strSerializeJSON = JsonConvert.SerializeObject(Buf);
+                    sw.WriteLine(strSerializeJSON);// 直接追加文件末尾，换行
+                }
+            }
+        }
+
+        private void WriteBinaryFile(string fileName, Tuple<RCV_FENBI, IntPtr> tuple)
+        {
+            using (FileStream fileStream = new FileStream(fileName, chkOverwrite.Checked ? FileMode.Create : FileMode.Append))
+            {
+                using (BinaryWriter writer = new BinaryWriter(fileStream))
+                {
+                    writer.Write(0);
+                    for (int i = 0; i < tuple.Item1.m_nCount; i++)
+                    {
+                        HaiLiDrvDemo.RCV_FENBI_STRUCTEx data =
+                             (HaiLiDrvDemo.RCV_FENBI_STRUCTEx)Marshal.PtrToStructure(
+                                 new IntPtr((int)tuple.Item2 + 30 + 108 * i),
+                                 typeof(HaiLiDrvDemo.RCV_FENBI_STRUCTEx));
+
+                        writer.Write(data.m_lTime * 1000L);
+                        writer.Write((int)Math.Round(data.m_fNewPrice * 100));
+                        writer.Write(0);
+                        writer.Write((long)Math.Round(data.m_fVolume * 100L));
+                        writer.Write((long)Math.Round(data.m_fAmount * 100L));
+                        writer.Write(true);
+
+                        for (int j = 0; j < 5; j++)
+                        {
+                            writer.Write(data.m_fBuyPrice[j]);
+                            writer.Write(data.m_fBuyVolume[j]);
+                        }
+
+                        for (int j = 0; j < 5; j++)
+                        {
+                            writer.Write(data.m_fSellPrice[j]);
+                            writer.Write(data.m_fSellVolume[j]);
+                        }
+                    }
+                }
+            }
         }
 
         private void button2_Click(object sender, EventArgs e)
