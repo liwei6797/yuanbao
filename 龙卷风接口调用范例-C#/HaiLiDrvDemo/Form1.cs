@@ -361,27 +361,32 @@ namespace HaiLiDrvDemo
                                  new IntPtr((int)tuple.Item2 + 30 + 108 * i),
                                  typeof(HaiLiDrvDemo.RCV_FENBI_STRUCTEx));
 
-                        writer.Write(data.m_lTime * 1000L);
-                        writer.Write((int)Math.Round(data.m_fNewPrice * 100));
-                        writer.Write(0);
-                        writer.Write((long)Math.Round(data.m_fVolume * 100L));
-                        writer.Write((long)Math.Round(data.m_fAmount * 100L));
-                        writer.Write(true);
+                        writer.Write(Reverse(BitConverter.GetBytes(data.m_lTime * 1000L)));
+                        writer.Write(Reverse(BitConverter.GetBytes((int)Math.Round(data.m_fNewPrice * 100))));
+                        writer.Write(Reverse(BitConverter.GetBytes(0)));
+                        writer.Write(Reverse(BitConverter.GetBytes((long)Math.Round(data.m_fVolume * 100L))));
+                        writer.Write(Reverse(BitConverter.GetBytes((long)Math.Round(data.m_fAmount * 100L))));
+                        writer.Write(Reverse(BitConverter.GetBytes(true)));
 
                         for (int j = 0; j < 5; j++)
                         {
-                            writer.Write(data.m_fBuyPrice[j]);
-                            writer.Write(data.m_fBuyVolume[j]);
+                            writer.Write(Reverse(BitConverter.GetBytes(data.m_fBuyPrice[j])));
+                            writer.Write(Reverse(BitConverter.GetBytes(data.m_fBuyVolume[j])));
                         }
-
                         for (int j = 0; j < 5; j++)
                         {
-                            writer.Write(data.m_fSellPrice[j]);
-                            writer.Write(data.m_fSellVolume[j]);
+                            writer.Write(Reverse(BitConverter.GetBytes(data.m_fSellPrice[j])));
+                            writer.Write(Reverse(BitConverter.GetBytes(data.m_fSellVolume[j])));
                         }
                     }
                 }
             }
+        }
+
+        private byte[] Reverse(byte[] bytes)
+        {
+            Array.Reverse(bytes);
+            return bytes;
         }
 
         private void button2_Click(object sender, EventArgs e)
