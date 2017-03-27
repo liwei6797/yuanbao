@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Threading.Tasks;
 using System.Net;
+using System.Net.Sockets;
 
 namespace HaiLiDrvDemo
 {
@@ -42,7 +43,7 @@ namespace HaiLiDrvDemo
         [DllImport("Kernel32")]
         public static extern int FreeLibrary(int handle);
 
-
+        private Socket clientSocket = null;
         //private string dirData = "data\\" + DateTime.Now.Year + "\\" + DateTime.Now.ToString("yyyy-MM-dd");
         private string dirFenbi = "";
 
@@ -59,6 +60,11 @@ namespace HaiLiDrvDemo
         {
             InitializeComponent();
             CreateDir();
+        }
+
+        public void SetClientSocket(Socket s)
+        {
+            clientSocket = s;
         }
 
         private void CreateDir()
@@ -147,7 +153,7 @@ namespace HaiLiDrvDemo
                                 }
 
                                 //WriteFile(report, report.m_szLabel, dirData);
-
+                                WriteSocketMsg(report);
                                 //注意：避免影响界面的刷新，只显示前20条记录
                                 //if (i > 20) break;
                             }
@@ -330,6 +336,61 @@ namespace HaiLiDrvDemo
             base.WndProc(ref m);
         }
 
+        private void WriteSocketMsg(RCV_REPORT_STRUCTExV3 report)
+        {
+            try
+            {
+                if (clientSocket != null)
+                {
+                    using (MemoryStream memStream = new MemoryStream())
+                    {
+                        using (BinaryWriter writer = new BinaryWriter(memStream))
+                        {
+                            writer.Write((byte)0xFF);
+                            char[] dest = new char[6];//股票代码
+                            Array.Copy(report.m_szLabel, dest, 6);
+                            //18515=SH 23123=SZ                            
+                            string stockNo = (report.m_wMarket == 18515 ? "1" : "2") + new string(dest);
+                            writer.Write(BitConverter.GetBytes(int.Parse(stockNo)));
+                            writer.Write(Reverse(BitConverter.GetBytes(report.m_time * 1000L)));
+                            writer.Write(Reverse(BitConverter.GetBytes((int)Math.Round(report.m_fNewPrice * 100))));
+                            writer.Write(Reverse(BitConverter.GetBytes(0)));
+                            writer.Write(Reverse(BitConverter.GetBytes((long)Math.Round(report.m_fVolume * 100L))));
+                            writer.Write(Reverse(BitConverter.GetBytes((long)Math.Round(report.m_fAmount * 100L))));
+                            writer.Write(Reverse(BitConverter.GetBytes(true)));
+
+                            for (int j = 0; j < 3; j++)
+                            {
+                                writer.Write(Reverse(BitConverter.GetBytes(report.m_fBuyPrice[j])));
+                                writer.Write(Reverse(BitConverter.GetBytes(report.m_fBuyVolume[j])));
+                            }
+                            writer.Write(Reverse(BitConverter.GetBytes(report.m_fBuyPrice4)));
+                            writer.Write(Reverse(BitConverter.GetBytes(report.m_fBuyVolume4)));
+                            writer.Write(Reverse(BitConverter.GetBytes(report.m_fBuyPrice5)));
+                            writer.Write(Reverse(BitConverter.GetBytes(report.m_fBuyVolume5)));
+
+                            for (int j = 0; j < 3; j++)
+                            {
+                                writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellPrice[j])));
+                                writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellVolume[j])));
+                            }
+                            writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellPrice4)));
+                            writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellVolume4)));                            
+                            writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellPrice5)));
+                            writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellVolume5)));
+
+                            writer.Write((byte)0xFF);
+                            clientSocket.Send(memStream.ToArray());
+                        }
+                    }                   
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+
         private void WriteJsonFile(string fileName, Tuple<RCV_FENBI, IntPtr> tuple)
         {
             using (System.IO.StreamWriter sw = new System.IO.StreamWriter(fileName, !chkOverwrite.Checked))
@@ -486,6 +547,11 @@ namespace HaiLiDrvDemo
             }
             //string[] content = WebRequest.Get("http://hq.sinajs.cn/list=sh000001").execute().returnContent().asString().split(",");
             //return org.apache.commons.lang3.time.DateUtils.parseDate(content[content.length - 3], "yyyy-MM-dd");
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            this.Text += " handle: " + this.Handle;
         }
     }
 

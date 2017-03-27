@@ -204,6 +204,7 @@
             this.Controls.Add(this.button1);
             this.Name = "Form1";
             this.Text = "开发者版本接口调用演示程序(C#语言调用示例)";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
