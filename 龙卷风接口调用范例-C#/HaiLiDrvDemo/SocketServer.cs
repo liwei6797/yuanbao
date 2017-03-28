@@ -15,11 +15,11 @@ namespace HaiLiDrvDemo
         public static void Start(Form1 frm1)
         {  
             //服务器IP地址  
-            IPAddress ip = IPAddress.Parse("127.0.0.1");  
+            //IPAddress ip = IPAddress.Parse("192.168.1.230");
             serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);  
-            serverSocket.Bind(new IPEndPoint(ip, myProt));  //绑定IP地址：端口  
+            serverSocket.Bind(new IPEndPoint(IPAddress.Any, myProt));  //绑定IP地址：端口  
             serverSocket.Listen(10);    //设定最多10个排队连接请求  
-            //Console.WriteLine("启动监听{0}成功", serverSocket.LocalEndPoint.ToString());  
+            Console.WriteLine("启动监听{0}成功", serverSocket.LocalEndPoint.ToString());  
             //通过Clientsoket发送数据  
             Thread myThread = new Thread(ListenClientConnect);  
             myThread.Start();

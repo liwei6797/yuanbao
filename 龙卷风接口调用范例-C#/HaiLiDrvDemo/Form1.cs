@@ -116,6 +116,8 @@ namespace HaiLiDrvDemo
             Stock_Init Stock_InitProc = (Stock_Init)GetAddress(instance, "Stock_Init", typeof(Stock_Init));
             Stock_InitProc(this.Handle, StockDrv.RCV_MSG_STKDATA, StockDrv.RCV_WORK_SENDMSG);
 
+            SocketServer.Start(this);
+
         }
 
         protected override void WndProc(ref System.Windows.Forms.Message m)
@@ -351,7 +353,7 @@ namespace HaiLiDrvDemo
                             Array.Copy(report.m_szLabel, dest, 6);
                             //18515=SH 23123=SZ                            
                             string stockNo = (report.m_wMarket == 18515 ? "1" : "2") + new string(dest);
-                            writer.Write(BitConverter.GetBytes(int.Parse(stockNo)));
+                            writer.Write(Reverse(BitConverter.GetBytes(int.Parse(stockNo))));                           
                             writer.Write(Reverse(BitConverter.GetBytes(report.m_time * 1000L)));
                             writer.Write(Reverse(BitConverter.GetBytes((int)Math.Round(report.m_fNewPrice * 100))));
                             writer.Write(Reverse(BitConverter.GetBytes(0)));
@@ -380,7 +382,12 @@ namespace HaiLiDrvDemo
                             writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellVolume5)));
 
                             writer.Write((byte)0xFF);
-                            clientSocket.Send(memStream.ToArray());
+                            byte[] ms = memStream.ToArray();
+                            string str = BitConverter.ToString(ms).Replace("-", " ");
+                            Console.WriteLine(str);
+                            clientSocket.Send(ms);
+
+                            
                         }
                     }                   
                 }
