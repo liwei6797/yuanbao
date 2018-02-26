@@ -168,6 +168,10 @@ namespace HaiLiDrvDemo
                             {
                                 // 补日线数据;   
                                 case HaiLiDrvDemo.StockDrv.FILE_HISTORY_EX:
+                                    DateTime dt = DateTime.Now;
+                                    string dayDir = "day" + dt.ToString("yyyyMMdd");
+                                    string fileName = "";
+                                    Directory.CreateDirectory(dayDir);
                                     //行情中的商品名称等数据存入此处（即补充的数据头）  
                                     for (int i = 0; i < pHeader.m_nPacketNum; i++)
                                     {
@@ -180,13 +184,19 @@ namespace HaiLiDrvDemo
                                         if ((uint)history.m_time == StockDrv.EKE_HEAD_TAG)
                                         {
                                             listBox1.Items.Add("日线数据，股票代码：" + new string(HeadEx.m_szLabel));
+                                            //创建文件
+                                            char[] dest = new char[6];//股票代码
+                                            Array.Copy(HeadEx.m_szLabel, dest, 6);
+                                            fileName = dayDir + "\\" + (HeadEx.m_wMarket == 18515 ? "1" : "2") + new string(dest) + ".txt";
+
                                         }
                                         else
                                         {
-                                            listBox1.Items.Add("交易时间：" + history.m_time.ToString() + ",最高价:" + Convert.ToString(history.m_fHigh) + ",最低价:" + Convert.ToString(history.m_fLow));
+                                            //listBox1.Items.Add("交易时间：" + history.m_time.ToString() + ",最高价:" + Convert.ToString(history.m_fHigh) + ",最低价:" + Convert.ToString(history.m_fLow));
+                                            WriteDayFile(fileName, history);
                                         }
                                         //注意：避免影响界面的刷新，只显示前20条记录
-                                        if (i > 20) break;
+                                        //if (i > 20) break;
                                     }
                                     break;
                                 // 补分时线数据;   
@@ -353,7 +363,7 @@ namespace HaiLiDrvDemo
                             Array.Copy(report.m_szLabel, dest, 6);
                             //18515=SH 23123=SZ                            
                             string stockNo = (report.m_wMarket == 18515 ? "1" : "2") + new string(dest);
-                            writer.Write(Reverse(BitConverter.GetBytes(int.Parse(stockNo))));                           
+                            writer.Write(Reverse(BitConverter.GetBytes(int.Parse(stockNo))));
                             writer.Write(Reverse(BitConverter.GetBytes(report.m_time * 1000L)));
                             writer.Write(Reverse(BitConverter.GetBytes((int)Math.Round(report.m_fNewPrice * 100))));
                             writer.Write(Reverse(BitConverter.GetBytes(0)));
@@ -377,7 +387,7 @@ namespace HaiLiDrvDemo
                                 writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellVolume[j])));
                             }
                             writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellPrice4)));
-                            writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellVolume4)));                            
+                            writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellVolume4)));
                             writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellPrice5)));
                             writer.Write(Reverse(BitConverter.GetBytes(report.m_fSellVolume5)));
 
@@ -387,9 +397,9 @@ namespace HaiLiDrvDemo
                             Console.WriteLine(str);
                             clientSocket.Send(ms);
 
-                            
+
                         }
-                    }                   
+                    }
                 }
             }
             catch (Exception ex)
@@ -412,6 +422,29 @@ namespace HaiLiDrvDemo
                     string strSerializeJSON = JsonConvert.SerializeObject(Buf);
                     sw.WriteLine(strSerializeJSON);// 直接追加文件末尾，换行
                 }
+            }
+        }
+
+        private void WriteDayFile(string fileName, HaiLiDrvDemo.RCV_HISTORY_STRUCTEx history)
+        {
+            using (System.IO.StreamWriter sw = new System.IO.StreamWriter(fileName, true))
+            {
+                //listBox1.Items.Add("交易时间：" + history.m_time.ToString() + ",最高价:" + Convert.ToString(history.m_fHigh) + ",最低价:" + Convert.ToString(history.m_fLow));
+
+
+                //         public int m_time;
+                //public Single m_fOpen; //开盘  
+                //public Single m_fHigh; //最高  
+                //public Single m_fLow; //最低  
+                //public Single m_fClose; //收盘  
+                //public Single m_fVolume; //量  
+                //public Single m_fAmount; //额  
+                //public UInt16 m_wAdvance; //涨数,仅大盘有效  
+                //public UInt16 m_wDecline; //跌数,仅大盘有效  
+
+                string strSerializeJSON = JsonConvert.SerializeObject(history);
+                sw.WriteLine(strSerializeJSON);// 直接追加文件末尾，换行
+
             }
         }
 
@@ -469,9 +502,26 @@ namespace HaiLiDrvDemo
         private void button4_Click(object sender, EventArgs e)
         {
 
+
             AskStockDay AskStockDayProc = (AskStockDay)GetAddress(instance, "AskStockDay", typeof(AskStockDay));
             if (AskStockDayProc != null)
-                AskStockDayProc("SH600026", 2);
+            {
+                //AskStockDayProc("SH600001" , 3);
+                AskStockDayProc(null, 3);
+
+                //foreach (int s in Consts.StockNOs)
+                //{
+                //    if (s.ToString().StartsWith("1"))
+                //    {
+                //        AskStockDayProc("SH" + (s - 1000000), 3);
+                //    }
+                //    else
+                //    {
+                //        AskStockDayProc("SZ" + (s - 2000000), 3);
+                //    }
+                //}
+
+            }
         }
 
         private void button5_Click(object sender, EventArgs e)
@@ -587,5 +637,7 @@ namespace HaiLiDrvDemo
             }
             SendMessage(m_hWnd, MY_MSG_END, 0, 0);
         }
+
+
     }
 }
